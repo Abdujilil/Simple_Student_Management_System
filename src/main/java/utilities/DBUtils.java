@@ -10,11 +10,131 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static utilities.DataUtil.*;
+
 public class DBUtils {
     private static Connection connection;//connect with a database
     private static Statement statement;//execute query
     private static ResultSet resultSet;//store response/result set data
     private static ResultSetMetaData resultSetMetaData;
+
+    public static void addStudentsDB(List<Student> students) {
+        for (Student student : students) {
+            String query = String.format(Constants.INSERT_ROW_STUDENTS, Constants.STUDENTS,
+                    Constants.STUDENT_ID, Constants.FIRST_NAME, Constants.LAST_NAME,
+                    Constants.SCHOOL_YEAR, student.getStudentID(), student.getFirstName(),
+                    student.getLastName(), student.getSchoolYear());
+            executeQuery(query);
+        }
+    }
+
+    public static void enrollStudents(List<Enrollment> enrollments) {
+        for (Enrollment enrollment : enrollments) {
+            String query = String.format(Constants.INSERT_ROW_ENROLLMENTS,Constants.ENROLLMENTS,
+                    Constants.STUDENT_ID, Constants.COURSE_CODE, enrollment.getStudentID(),
+                    enrollment.getCourseCode());
+            executeQuery(query);
+        }
+    }
+
+    public static Student getStudentByID(int studentID) {
+        Student student = new Student();
+        String query = String.format(Constants.SELECT_ONE_NUMERIC_CONDITION,Constants.STUDENTS,
+                Constants.STUDENT_ID, studentID);
+        List<Map<String, Object>> studentInfo = getQueryResultMap(query);
+        if (studentInfo.isEmpty()) {
+            return null;
+        } else {
+            student.setStudentID(studentID);
+            student.setFirstName((String) studentInfo.get(0).get(Constants.FIRST_NAME));
+            student.setLastName((String) studentInfo.get(0).get(Constants.LAST_NAME));
+            student.setSchoolYear(((Number) studentInfo.get(0).get(Constants.SCHOOL_YEAR)).intValue());
+            return student;
+        }
+    }
+
+    public static boolean enrollmentCheck(int studentID, String courseCode) {
+        String query = String.format(Constants.SELECT_ENROLLMENTS, Constants.ENROLLMENTS,
+                Constants.STUDENT_ID, studentID, Constants.COURSE_CODE, courseCode);
+        List<Map<String, Object>> enrollments = getQueryResultMap(query);
+        return enrollments.isEmpty();
+    }
+
+    public static void deleteEnrollment(int studentID, String courseCode) {
+        String query = String.format(Constants.DELETE_ENROLLMENT, Constants.ENROLLMENTS,
+                Constants.STUDENT_ID, studentID, Constants.COURSE_CODE,  courseCode);
+        executeQuery(query);
+    }
+
+    public static List<Course> getCoursesByStudentID(int studentID) {
+        String query = String.format(Constants.ENROLLMENTS_JOIN_COURSES, Constants.ENROLLMENTS,
+                Constants.COURSES, Constants.ENROLLMENTS, Constants.COURSE_CODE,
+                Constants.COURSES, Constants.COURSE_CODE);
+        List<Map<String, Object>> enrollments = getQueryResultMap(query);
+        List<Course> courses = new ArrayList<>();
+        for (Map<String, Object> enrollment : enrollments) {
+            Course course = new Course();
+            if (((Number)enrollment.get(Constants.STUDENT_ID)).intValue() == studentID) {
+                course.setName((String) enrollment.get(Constants.COURSE_NAME));
+                course.setCourseCode((String) enrollment.get(Constants.COURSE_CODE));
+                course.setInstructor((String) enrollment.get(Constants.COURSE_INSTRUCTOR));
+                course.setDuration(((Number) enrollment.get(Constants.COURSE_DURATION)).intValue());
+                course.setPrice(((Number) enrollment.get(Constants.COURSE_PRICE)).doubleValue());
+                courses.add(course);
+            }
+        }
+        return courses;
+    }
+
+    public static List<String> getAllCourseCodes() {
+        String query = String.format(Constants.SELECT_SINGLE_COLUMN, Constants.COURSE_CODE,
+                Constants.COURSES);
+        return objectToStringList(getColumnData(query, Constants.COURSE_CODE));
+    }
+
+    public static List<Course> getAllCourses() {
+        String query = String.format(Constants.SELECT_ALL, Constants.COURSES);
+        List<Map<String, Object>> allCourses = getQueryResultMap(query);
+        List<Course> courses = new ArrayList<>();
+        for (Map<String, Object> eachCourse : allCourses) {
+            Course course = new Course();
+            course.setName((String) eachCourse.get(Constants.COURSE_NAME));
+            course.setCourseCode((String) eachCourse.get(Constants.COURSE_CODE));
+            course.setPrice(((Number) eachCourse.get(Constants.COURSE_PRICE)).doubleValue());
+            courses.add(course);
+        }
+        return courses;
+    }
+
+    public static int getCourseEnrollmentCount(String courseCode) {
+        String query = String.format(Constants.SELECT_SINGLE_STRING_VALUE,
+                Constants.ENROLLMENT_COUNT, Constants.COURSES,
+                Constants.COURSE_CODE, courseCode);
+        return ((Number) getCellValue(query)).intValue();
+    }
+
+    public static void increaseCourseEnrollmentCount(String courseCode) {
+        int newEnrollmentCount = getCourseEnrollmentCount(courseCode) + 1;
+        String query = String.format(Constants.UPDATE_ENROLLMENT_COUNT,
+                Constants.COURSES, Constants.ENROLLMENT_COUNT, newEnrollmentCount,
+                Constants.COURSE_CODE, courseCode);
+        executeQuery(query);
+    }
+
+    public static void decreaseCourseEnrollmentCount(String courseCode) {
+        int newEnrollmentCount = getCourseEnrollmentCount(courseCode) - 1;
+        String query = String.format(Constants.UPDATE_ENROLLMENT_COUNT,
+                Constants.COURSES, Constants.ENROLLMENT_COUNT, newEnrollmentCount,
+                Constants.COURSE_CODE, courseCode);
+        executeQuery(query);
+    }
+
+    public static int getCourseEnrollmentLimit(String courseCode) {
+        String query = String.format(Constants.SELECT_SINGLE_STRING_VALUE,
+                Constants.ENROLLMENT_LIMIT, Constants.COURSES,
+                Constants.COURSE_CODE, courseCode);
+        return ((Number) getCellValue(query)).intValue();
+    }
 
     /**
      * Performs connection with a database.
@@ -277,42 +397,4 @@ public class DBUtils {
         return rowCount ;
     }
 
-    public static void addStudentsDB(List<Student> students) {
-        for (Student student : students) {
-            String query = String.format(Constants.INSERT_ROW_STUDENTS, Constants.STUDENTS,
-                    Constants.STUDENT_ID, Constants.FIRST_NAME, Constants.LAST_NAME,
-                    Constants.SCHOOL_YEAR, student.getStudentID(), student.getFirstName(),
-                    student.getLastName(), student.getSchoolYear());
-            executeQuery(query);
-        }
-    }
-
-    public static void enrollStudents(List<Enrollment> enrollments) {
-        for (Enrollment enrollment : enrollments) {
-            String query = String.format(Constants.INSERT_ROW_ENROLLMENTS,Constants.ENROLLMENTS,
-                    Constants.STUDENT_ID, Constants.COURSE_CODE, enrollment.getStudentID(),
-                    enrollment.getCourseCode());
-            executeQuery(query);
-        }
-    }
-
-    public static Student getStudentByID(int studentID) {
-        Student student = new Student();
-        String query = String.format(Constants.SELECT_ONE_CONDITION,Constants.STUDENTS,
-                Constants.STUDENT_ID, studentID);
-        List<Map<String, Object>> studentInfo = getQueryResultMap(query);
-        student.setStudentID(studentID);
-        student.setFirstName((String) studentInfo.get(0).get("FIRST_NAME"));
-        student.setLastName((String) studentInfo.get(0).get("LAST_NAME"));
-        student.setSchoolYear(((Number)studentInfo.get(0).get("SCHOOL_YEAR")).intValue());
-        return student;
-    }
-
-//    public static Enrollment getEnrollmentByStudentID(int studentID) {
-//
-//    }
-//
-//    public static Course getCourseByStudentID(int studentID) {
-//
-//    }
 }
