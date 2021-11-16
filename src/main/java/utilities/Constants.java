@@ -6,6 +6,7 @@ public class Constants {
     public static final String STUDENTS = "STUDENTS";
     public static final String COURSES = "COURSES";
     public static final String ENROLLMENTS = "ENROLLMENTS";
+    public static final String INVOICES = "INVOICES";
 
     //Database Columns
     public static final String STUDENT_ID = "STUDENT_ID";
@@ -19,10 +20,14 @@ public class Constants {
     public static final String FIRST_NAME = "FIRST_NAME";
     public static final String LAST_NAME = "LAST_NAME";
     public static final String SCHOOL_YEAR = "SCHOOL_YEAR";
+    public static final String TOTAL_TUITION = "TOTAL_TUITION";
+    public static final String AMOUNT_PAID = "AMOUNT_PAID";
+    public static final String CURRENT_BALANCE = "CURRENT_BALANCE";
 
     //SQL QUERIES
     public static final String INSERT_ROW_ENROLLMENTS = "INSERT INTO %s (%s, %s) VALUES('%s','%s')";
     public static final String INSERT_ROW_STUDENTS = "INSERT INTO %s (%s, %s, %s, %s) VALUES(%s, '%s','%s', %s)";
+    public static final String INSERT_ROW_INVOICES = "INSERT INTO %s (%s, %s, %S) VALUES(%s, %s, %S)";
     public static final String SELECT_ONE_NUMERIC_CONDITION = "SELECT * FROM %s WHERE %s=%s";
     public static final String ENROLLMENTS_JOIN_COURSES = "SELECT * FROM %s join %s on %s.%s = %s.%s";
     public static final String SELECT_SINGLE_COLUMN = "SELECT %s FROM %s";
@@ -31,5 +36,7 @@ public class Constants {
     public static final String DELETE_ENROLLMENT = "DELETE FROM %s WHERE %s=%s AND %s='%s'";
     public static final String SELECT_SINGLE_STRING_VALUE = "SELECT %s FROM %s WHERE %S='%S'";
     public static final String UPDATE_ENROLLMENT_COUNT = "UPDATE %s SET %s=%s WHERE %s='%s'";
+    public static final String UPDATE_INVOICE = "UPDATE %s SET %s=%s WHERE %s=%s";
+    public static final String GROUP_BY_ONE_NUMERIC = "SELECT COUNT(*) FROM %s GROUP BY %s HAVING %s = %s";
 
 }

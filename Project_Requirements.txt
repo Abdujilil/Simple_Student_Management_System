@@ -1,13 +1,41 @@
 Application should do following:
-	1. Ask user how many students will be added to the database
-	2. The user should be prompted to enter the name and the year of each student - Verify Information is correctly formatted
-	3. The student should have a 5 digit unique ID, with the first number being their grade level
-	4. A student can enroll in the following courses:
-		History 101
-		Mathematics 101
-		English 101
-		Chemistry 101
-		Computer Science 101
-	5. Each course cost $600 to enroll
-	6. The student should be able to view their balance and pay their tuition
-	7. To see the status of the student, we should see their name, ID, courses enrolled and balance
+	1. Ask enrollment manager to select one options from the list
+
+		- Enroll new students to a course
+			- Ask enrollment manager how many students will be enrolled
+			- The enrollment manager should be prompted to enter the name and the year of each student
+			- The student should have a 5 digit unique ID, with the first number being their grade level
+			- A student can be enrolled in the following courses (Each course cost $600 to enroll):
+				History 101
+				Mathematics 101
+				English 101
+				Chemistry 101
+				Computer Science 101
+			- Option to check enrollment status or end process after course selection
+
+		- Enroll an existing student to a course
+			- Ask enrollment manager to enter a student ID
+			- A student can be enrolled in the following courses (Each course cost $600 to enroll):
+				History 101
+				Mathematics 101
+				English 101
+				Chemistry 101
+				Computer Science 101
+			- Option to check enrollment status or end process after course selection
+
+		- Delist a student from a course
+			- Ask enrollment manager to enter a student ID
+			- Ask enrollment manager to enter a course code
+			- Confirm to delist
+
+		- Check Enrollment Status of an existing student
+			- Ask enrollment manager to enter a student ID
+			- display student details, course details and invoice details
+
+		- Check Invoice detail of a student
+			- Ask enrollment manager to enter a student ID
+			- display invoice details
+
+		- Check availability of a course
+			- Ask enrollment manager to enter a course code
+			- Display how many spots are left

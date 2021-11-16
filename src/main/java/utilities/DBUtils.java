@@ -2,6 +2,7 @@ package utilities;
 
 import SimpleStudentManagementSystem.Course;
 import SimpleStudentManagementSystem.Enrollment;
+import SimpleStudentManagementSystem.Invoice;
 import SimpleStudentManagementSystem.Student;
 
 import java.sql.*;
@@ -134,6 +135,48 @@ public class DBUtils {
                 Constants.ENROLLMENT_LIMIT, Constants.COURSES,
                 Constants.COURSE_CODE, courseCode);
         return ((Number) getCellValue(query)).intValue();
+    }
+
+    public static void modifyTuition(int studentID, double tuition) {
+        String query = String.format(Constants.UPDATE_INVOICE, Constants.INVOICES,
+                Constants.TOTAL_TUITION, tuition, Constants.STUDENT_ID, studentID);
+        executeQuery(query);
+    }
+
+    public static void insertTuition(int studentID, double tuition, double currentBalance) {
+        String query = String.format(Constants.INSERT_ROW_INVOICES,
+                Constants.INVOICES, Constants.STUDENT_ID, Constants.TOTAL_TUITION,
+                Constants.CURRENT_BALANCE, studentID, tuition, currentBalance);
+        executeQuery(query);
+    }
+
+    public static void modifyBalance(int studentID, double balance) {
+        String query = String.format(Constants.UPDATE_INVOICE, Constants.INVOICES,
+                Constants.CURRENT_BALANCE, balance, Constants.STUDENT_ID, studentID);
+        executeQuery(query);
+    }
+
+    public static int getStudentEnrollmentCount(int studentID) {
+        String query = String.format(Constants.SELECT_ONE_NUMERIC_CONDITION,
+                Constants.ENROLLMENTS, Constants.STUDENT_ID, studentID);
+        return getQueryResultMap(query).size();
+    }
+
+    public static List<Integer> getAllInvoicesStudentID() {
+        String query = String.format(Constants.SELECT_SINGLE_COLUMN,
+                Constants.STUDENT_ID, Constants.INVOICES);
+        return objectToIntList(getColumnData(query, Constants.STUDENT_ID));
+    }
+
+    public static Invoice getInvoiceDetails(int studentID) {
+        String query = String.format(Constants.SELECT_ONE_NUMERIC_CONDITION,
+                Constants.INVOICES, Constants.STUDENT_ID, studentID);
+        Map<String, Object> invoiceRow = getRowMap(query);
+        Invoice invoice = new Invoice();
+        invoice.setTotalTuition(((Number) invoiceRow.get(Constants.TOTAL_TUITION)).doubleValue());
+        invoice.setAmountPaid(((Number) invoiceRow.get(Constants.AMOUNT_PAID)).doubleValue());
+        invoice.setCurrentBalance(((Number) invoiceRow.get(Constants.CURRENT_BALANCE)).doubleValue());
+        return invoice;
     }
 
     /**

@@ -22,13 +22,9 @@ public class MainProgram {
     public static void main(String[] args) {
         displayStartingOptions();
         String answer = scn.nextLine();
-
+        int studentID = 0;
         switch (answer) {
             case "1":
-                //Check enrollment details
-                getEnrollmentDetail();
-                break;
-            case "2":
                 //Ask how many students to add
                 studentCount = requestNumberOfStudents();
                 generateStudents(studentCount);
@@ -40,19 +36,28 @@ public class MainProgram {
                 selectCourseNew();
                 continueOrEnd();
                 break;
-            case "3":
-                int studentID = requestStudentID();
+            case "2":
+                studentID = requestStudentID();
                 //Select courses to enroll
                 selectCourseExist(studentID);
                 continueOrEnd();
                 break;
-            case "4":
+            case "3":
                 //disenroll a student
                 disenrollAStudent();
                 break;
+            case "4":
+                //Check enrollment details
+                getEnrollmentDetail();
+                break;
             case "5":
+                studentID = requestStudentID();
+                //Check Invoice details
+                printInvoiceDetails(studentID);
+            case "6":
                 //Check availability of a course
                 courseAvailabilityCheck();
+                break;
         }
         destroy();
     }
@@ -169,6 +174,7 @@ public class MainProgram {
         addStudentsDB(students);
         enrollStudents(enrollments);
         increaseCourseEnrollmentCount(courseSelection);
+        updateTuition(students);
         wait(1);
         System.out.println("------ Course Selection is Complete! ------");
     }
@@ -206,6 +212,7 @@ public class MainProgram {
         System.out.println("------ Please wait while we complete the Course Selection process... ------");
         enrollStudents(enrollments);
         increaseCourseEnrollmentCount(courseSelection);
+        updateTuition(studentID);
         wait(1);
         System.out.println("------ Course Selection is Complete! ------");
     }
@@ -243,6 +250,7 @@ public class MainProgram {
         System.out.println("\tStudent ID:\t" + student.getStudentID());
         System.out.println("\tSchool Year:\t" + student.getSchoolYear());
         printCourseDetails(courses);
+        printInvoiceDetails(studentID);
         System.out.println("\n\tThank you and have a great day!\n");
         System.out.println("\n######################################################\n");
         wait(1);
@@ -258,14 +266,23 @@ public class MainProgram {
         }
     }
 
+    public static void printInvoiceDetails(int studentID) {
+        Invoice invoice = getInvoiceDetails(studentID);
+        System.out.println("\n\t\t----- Invoice -----");
+        System.out.println("\tTotal Tuition:\t" + invoice.getTotalTuition());
+        System.out.println("\tAmount Paid:\t" + invoice.getAmountPaid());
+        System.out.println("\tCurrent Balance:\t" + invoice.getCurrentBalance());
+    }
+
     public static void displayStartingOptions() {
         System.out.println("\n********** Welcome Enrollment Manager! **********\n");
         System.out.println("\tPlease choose one of the following options:\n");
-        System.out.println("\t\t1. Check Enrollment Status of an existing student");
-        System.out.println("\t\t2. Enroll new student(s) to a course");
-        System.out.println("\t\t3. Enroll existing student to a course");
-        System.out.println("\t\t4. Disenroll a student from a course");
-        System.out.println("\t\t5. Check availability of a course");
+        System.out.println("\t\t1. Enroll new student(s) to a course");
+        System.out.println("\t\t2. Enroll existing student to a course");
+        System.out.println("\t\t3. Disenroll a student from a course");
+        System.out.println("\t\t4. Check Enrollment Status of an existing student");
+        System.out.println("\t\t5. Check Invoice detail of a student");
+        System.out.println("\t\t6. Check availability of a course");
     }
 
     public static void continueOrEnd() {
@@ -286,8 +303,8 @@ public class MainProgram {
         boolean enrolled = false;
         int studentID;
         String courseCode;
+        studentID = requestStudentID();
         do {
-            studentID = requestStudentID();
             System.out.println("\tPlease enter the course code:");
             courseCode = verifyCourseCode();
             if (enrollmentCheck(studentID, courseCode)) {
@@ -301,6 +318,7 @@ public class MainProgram {
         System.out.println("\t------ Please wait for the disenrollment process to complete... ------");
         deleteEnrollment(studentID, courseCode);
         decreaseCourseEnrollmentCount(courseCode);
+        updateTuition(studentID);
         wait(1);
         System.out.println("\t------ Course Disenrollment is Complete! ------");
         System.out.println("\n\tThank you and have a great day!\n");
@@ -335,6 +353,24 @@ public class MainProgram {
             }
         } while (!correct);
         return courseCode;
+    }
+
+    public static void updateTuition(List<Student> students) {
+        for (Student student : students) {
+            int enrollmentCount = getStudentEnrollmentCount(student.getStudentID());
+            insertTuition(student.getStudentID(), (enrollmentCount * 600), (-(enrollmentCount * 600)));
+        }
+    }
+
+    public static void updateTuition(int studentID) {
+        List<Integer> studentIDs = getAllInvoicesStudentID();
+        int enrollmentCount = getStudentEnrollmentCount(studentID);
+        if (studentIDs.contains(studentID)) {
+            modifyTuition(studentID, (enrollmentCount * 600));
+            modifyBalance(studentID, (-(enrollmentCount * 600)));
+        } else {
+            insertTuition(studentID, (enrollmentCount * 600), (-(enrollmentCount * 600)));
+        }
     }
 
     public static void yesNoDecision() {
